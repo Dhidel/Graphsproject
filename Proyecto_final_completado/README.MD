@@ -15,24 +15,67 @@ dirigidos, matrices y cadenas de Markov para identificar patrones en la circulac
 3. Encontrar rutas entre jugadores y calcular probabilidades con cadenas de Markov.
 4. Comparar los resultados entre partidos y selecciones.
 
-## 2. Instalación
+## 2. Instalación (Windows, PowerShell en Visual Studio Code)
 
 Requiere Python 3.10 o superior (probado con Python 3.14, pandas 3.0, numpy 2.5,
-networkx 3.6 y matplotlib 3.11).
+networkx 3.6 y matplotlib 3.11). Para comprobar la versión: `py --version`.
 
-```bash
-pip install -r requirements.txt
+Abrir la terminal de VS Code (**Terminal → New Terminal**, debe decir *PowerShell*) y ejecutar:
+
+```powershell
+# 1. Descargar el repositorio (si aún no se tiene)
+git clone https://github.com/Dhidel/Graphsproject.git
+cd Graphsproject
+
+# 2. Entrar a la carpeta del proyecto (aquí están main.py y requirements.txt)
+cd Proyecto_final_completado
+
+# 3. Crear el entorno virtual (solo la primera vez)
+py -m venv .venv
+
+# 4. Activarlo (hay que hacerlo cada vez que se abre una terminal nueva)
+.\.venv\Scripts\Activate.ps1
+
+# 5. Instalar las dependencias (solo la primera vez)
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
+
+Al activar el entorno, la línea de la terminal empieza con `(.venv)`.
+
+**Si PowerShell no permite activar el entorno** (error *"la ejecución de scripts está
+deshabilitada en este sistema"*), permitirlo solo para esa terminal y volver a activar:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+Para que VS Code use este entorno: `Ctrl+Shift+P` → **Python: Select Interpreter** →
+elegir `.\Proyecto_final_completado\.venv\Scripts\python.exe`.
+
+> **Nota (OneDrive):** el proyecto funciona dentro de una carpeta de OneDrive. La carpeta
+> `.venv` no se sube a git (está en `.gitignore`); si OneDrive la sincroniza lentamente,
+> se puede pausar la sincronización durante la instalación.
+
+En macOS/Linux los pasos son iguales, cambiando `py` por `python3` y la activación por
+`source .venv/bin/activate`.
 
 ## 3. Ejecución
 
-El programa funciona desde cualquier carpeta (las rutas se calculan con `pathlib` y `__file__`).
+Con el entorno activado y dentro de `Proyecto_final_completado`:
 
-```bash
+```powershell
 python main.py                  # menú interactivo
-python pruebas.py               # 50 pruebas automáticas
+python pruebas.py               # 50 pruebas automáticas (debe terminar en 50/50)
 python generar_presentacion.py  # regenera la carpeta Presentacion
 ```
+
+Sin activar el entorno también funciona llamando directamente a su Python:
+`.\.venv\Scripts\python.exe main.py`.
+
+Las rutas a los CSV se calculan con `pathlib` y `__file__`, así que el programa también
+funciona si se ejecuta desde otra carpeta (por ejemplo `python Proyecto_final_completado\main.py`).
 
 El menú permite elegir la **selección**, el **partido**, el **jugador de origen y destino**
 de la ruta, el **jugador destino del modelo de Markov**, el filtro de la gráfica y si
@@ -149,7 +192,17 @@ La tabla completa está en `Presentacion/tabla_12_partidos.md`.
 | N contra Arabia Saudita | no se pudo calcular | **ahora sí** (ver 7.2) |
 
 ### 7.2 El problema de la inversa contra Arabia Saudita (resuelto)
-Julián Álvarez recibió 4 pases pero no completó ninguno: su fila de pesos es cero y en P
+Julián Álvarez recibió **8 pases completados de 4 compañeros diferentes** (Enzo Fernández 3,
+Messi 2, Acuña 2 y Di María 1), pero **no completó ningún pase** (sus 8 intentos fueron
+7 incompletos y 1 "Unknown"). En términos del grafo:
+
+| Medida | Valor | Significado |
+|---|---|---|
+| Grado de entrada | 4 | compañeros diferentes que le pasaron |
+| Grado de entrada ponderado | 8 | pases completados que recibió |
+| Grado de salida (simple y ponderado) | 0 | no completó ningún pase |
+
+Como su grado de salida es 0, su fila de pesos es cero y en P
 queda P[Álvarez, Álvarez] = 1, o sea, es **otro estado absorbente**. La versión anterior lo
 dejaba dentro de Q; su fila de I − Q era cero, det(I − Q) = 0 y no existía la inversa.
 
@@ -195,8 +248,9 @@ y `git show a213d46^:WORLD_CUP_2022/README.md`) y se corrigieron las que no coin
 
 **Argentina**
 - **Arabia Saudita (542 pases):** Otamendi fue el eje (más pases realizados, recibidos y
-  mayor grado de entrada). Julián Álvarez casi no participó: recibió 4 pases y no completó
-  ninguno, lo que lo convierte en un estado absorbente en el modelo de Markov.
+  mayor grado de entrada). Julián Álvarez casi no participó: recibió 8 pases completados de
+  4 compañeros (grado de entrada 4, grado de entrada ponderado 8) y no completó ninguno
+  (grado de salida 0), lo que lo convierte en un estado absorbente en el modelo de Markov.
 - **México (476 pases, el menor de la fase de grupos):** Messi fue el jugador al que
   pasaron **más compañeros diferentes** (grado de entrada 13, el máximo del partido).
   *Corrección:* la versión anterior decía que Enzo Fernández recibió más pases de más
@@ -214,7 +268,8 @@ y `git show a213d46^:WORLD_CUP_2022/README.md`) y se corrigieron las que no coin
 
 **Brasil**
 - Los tres partidos de grupos tienen un volumen parecido (539, 507 y 512 pases).
-- **Suiza:** Thiago Silva y Marquinhos combinaron **60 pases** (29 + 31), el doble que la
+- **Suiza:** Thiago Silva y Marquinhos combinaron **60 pases** (31 de Thiago Silva a Marquinhos y 29 de Marquinhos a
+  Thiago Silva), el doble que la
   segunda pareja del partido (Alex Sandro–Thiago Silva, 30). Es el partido con mayor
   concentración (21.1 % en las 5 conexiones principales). *Corrección:* la versión anterior
   decía "casi el doble de cualquier otra conexión de los tres partidos"; contra Camerún,
@@ -223,8 +278,9 @@ y `git show a213d46^:WORLD_CUP_2022/README.md`) y se corrigieron las que no coin
   Danilo→Marquinhos (19) y Alex Sandro→Neymar (17) tienen valores parecidos (verificado).
 - **Camerún:** la red cambia por la rotación de jugadores. Aparecen 6 jugadores que no
   estuvieron en los dos partidos anteriores (Bremer, Dani Alves, Ederson, Everton Ribeiro,
-  Fabinho, Pedro), y desaparecen Thiago Silva, Alex Sandro, Danilo, Casemiro, Neymar y
-  Vinícius Jr. *Corrección:* Marquinhos y Raphinha sí aparecen contra Camerún. Que Brasil ya
+  Fabinho, Pedro), y no aparecen 9 jugadores que sí estuvieron en al menos uno de los dos
+  partidos anteriores: Alex Sandro, Alisson, Casemiro, Danilo, Neymar, Paquetá, Richarlison,
+  Thiago Silva y Vinícius Jr. *Corrección:* Marquinhos y Raphinha sí aparecen contra Camerún. Que Brasil ya
   estuviera clasificado es contexto histórico, no un dato del CSV.
 
 *Nota:* las afirmaciones anteriores sobre "dominio" o "posesión" no pueden comprobarse con

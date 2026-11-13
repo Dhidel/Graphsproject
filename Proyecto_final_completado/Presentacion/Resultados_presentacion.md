@@ -20,7 +20,7 @@ Las imágenes están en `graficas/` a 300 DPI.
 | A², A³ | Cuántos recorridos posibles de 2 o 3 conexiones hay |
 | Matriz P | Probabilidad de a quién va el siguiente pase completado |
 | P² | Probabilidad después de 2 pases |
-| N = (I − Q)⁻¹ | Cuántas veces se espera que cada jugador toque el balón antes de llegar al destino |
+| N = (I − Q)⁻¹ | Cuántas veces se espera que cada jugador toque el balón antes de la absorción (llegar al destino o a otro estado absorbente) |
 
 **Diapositivas sugeridas:** `red_arg_arabia_saudita.png`, `grados_arg_arabia_saudita.png`,
 `matriz_A_arabia.png`, `matriz_P_arabia.png`, `matriz_N_mexico.png`, `matriz_B_arabia.png`,
@@ -81,8 +81,11 @@ Estos valores son **idénticos** a los de los preliminares.
 
 **Problema (preliminares):** `np.linalg.inv(I − Q)` fallaba: la matriz era singular.
 
-**Causa exacta:** Julián Álvarez entró, recibió 4 pases y **no completó ninguno**.
-- Su fila de pases es cero, así que en P queda P[Álvarez, Álvarez] = 1: es un **estado absorbente**.
+**Causa exacta:** Julián Álvarez entró, recibió **8 pases completados de 4 compañeros
+diferentes** (Enzo Fernández 3, Messi 2, Acuña 2 y Di María 1) y **no completó ningún pase**.
+- Grado de entrada = 4 (compañeros diferentes), grado de entrada ponderado = 8 (pases
+  recibidos) y grado de salida = 0.
+- Como su grado de salida es 0, su fila de pases es cero, así que en P queda P[Álvarez, Álvarez] = 1: es un **estado absorbente**.
 - El código anterior solo quitaba a Otamendi de Q y dejaba a Álvarez dentro.
 - La fila de Álvarez en I − Q quedaba en ceros, así que det(I − Q) = 0.
 - En términos de valores propios: Q tenía valor propio 1, porque Álvarez forma una **clase
