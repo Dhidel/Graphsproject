@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Graficas generadas al ejecutar el programa (se pueden regenerar)
+Proyecto_final_completado/salidas/
